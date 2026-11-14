@@ -227,3 +227,6 @@ __marimo__/
 !**/data/splits.csv
 !**/data/HAM10000_metadata.csv
 out/
+
+# System files
+.DS_Store
