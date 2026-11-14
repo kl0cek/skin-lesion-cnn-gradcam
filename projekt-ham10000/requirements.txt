@@ -4,3 +4,5 @@ matplotlib
 scikit-learn
 pillow
 jupyter
+gradio
+# torch i torchvision instaluj osobno wg https://pytorch.org/get-started/locally (na Windows wersja z CUDA)
