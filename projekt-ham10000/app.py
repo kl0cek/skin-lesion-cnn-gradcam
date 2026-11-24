@@ -18,6 +18,17 @@ args = parser.parse_args()
 model = load_model(args.checkpoint)
 EXPLAIN = ["przewidywana klasa"] + [NAMES[c] for c in CLASSES]
 
+# legenda mapy: te same kolory co w overlay() (paleta inferno, miejsca bez wpływu zostają bez koloru)
+LEGEND = """
+<div style="font-size: 13px">
+  <div style="height: 12px; border-radius: 6px; border: 1px solid #ccc;
+              background: linear-gradient(to right, rgba(87, 16, 110, 0), #57106e 25%, #bc3754 50%, #f98e09 75%, #fcffa4)"></div>
+  <div style="display: flex; justify-content: space-between; margin-top: 4px">
+    <span>brak koloru – brak wpływu</span><span>średni wpływ</span><span>żółty – największy wpływ</span>
+  </div>
+</div>
+"""
+
 
 def predict(img, explain):
     if img is None:
@@ -54,6 +65,7 @@ with gr.Blocks(title="Klasyfikacja zmian skórnych") as demo:
         with gr.Column():
             result = gr.Label(num_top_classes=3, label="Wynik")
             heatmap = gr.Image(label="Grad-CAM – na co patrzył model")
+            gr.HTML(LEGEND)
     gr.Markdown(
         "**Projekt edukacyjny – nie jest narzędziem diagnostycznym.** Model uczono wyłącznie na zdjęciach "
         "dermatoskopowych; dla zwykłych zdjęć z telefonu wyniki mogą być błędne. Model zawsze wskazuje jedną "
