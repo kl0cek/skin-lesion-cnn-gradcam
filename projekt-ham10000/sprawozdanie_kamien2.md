@@ -61,3 +61,33 @@ Wybrano wariant **E5: EfficientNet-B0 + RandAugment + ważona CE** – najwyższ
 - Recall czerniaka ok. 0,70 oznacza, że model pomija ok. 3 na 10 czerniaków.
 
 **Kamień 3:** ocena modelu E5 na zbiorze testowym, macierz pomyłek, analiza Grad-CAM z wykorzystaniem masek segmentacji (H5), analiza progu decyzyjnego dla czerniaka oraz aplikacja Gradio.
+
+## 7. Test dłuższego treningu: 15 vs 30 epok
+
+Ponieważ najlepsze epoki E1 i E5 wypadały pod koniec treningu (sekcja 6), na sugestię prowadzącego powtórzono pełny zestaw eksperymentów E1–E8 (3 ziarna, 24 treningi) przy **30 epokach** zamiast 15. Pozostałe ustawienia bez zmian; trening lokalny na RTX 5080.
+
+| Wariant | Balanced acc. 15 → 30 | Recall mel 15 → 30 |
+|---|---|---|
+| E1 prosta CNN | 0,526 → 0,551 (+0,025) | 0,584 → 0,612 (+0,028) |
+| E2 ResNet50 | 0,783 → 0,794 (+0,011) | 0,608 → 0,679 (+0,070) |
+| E3 EfficientNet-B0 | 0,779 → 0,786 (+0,008) | 0,671 → 0,673 |
+| E4 bez augmentacji | 0,775 → 0,777 | 0,649 → 0,645 |
+| E5 RandAugment | 0,797 → 0,799 | 0,691 → 0,695 |
+| E6 zwykła CE | 0,714 → 0,730 (+0,016) | 0,526 → 0,548 |
+| E7 oversampling | 0,780 → 0,778 | 0,699 → 0,699 |
+| E8 podział losowy | 0,856 → 0,862 | 0,770 → 0,800 (+0,030) |
+
+**Wniosek.** Wydłużenie treningu do 30 epok daje poprawę marginalną, w dużej części mieszczącą się w rozrzucie między ziarnami. Balanced accuracy rośnie nieznacznie niemal wszędzie (najwięcej baseline E1 +0,025 i E6 +0,016), żadna metryka istotnie nie spada. Najwyraźniejszy zysk to recall czerniaka w E2 (+0,070) i przy losowym podziale E8 (+0,030). Ranking wariantów oraz wnioski H1–H4 pozostają bez zmian — potwierdza to, że przy 15 epokach modele były już blisko wysycenia.
+
+**Wybór modelu.** Najlepszym uczciwym wariantem nadal jest E5. Przy 30 epokach najwyższe średnie balanced accuracy ma ziarno s2 (0,807), ma ono jednak niższy recall czerniaka (0,675). Ponieważ celem projektu jest wykrywanie czerniaka, do kamienia 3 wybrano ziarno o najwyższym recallu czerniaka — **E5_s0 @30 epok** (balanced accuracy 0,798, recall czerniaka 0,759). Sprawdzono też, czy lepsze byłoby ziarno s2 z obniżonym progiem decyzyjnym dla czerniaka: przy tym samym recallu czerniaka (0,76) daje ono 199 fałszywych alarmów wobec 178 dla E5_s0, więc wybór E5_s0 jest korzystny także po uwzględnieniu progu. Recall czerniaka wyraźnie różni się między ziarnami (0,65–0,76), dlatego wynik na zbiorze testowym może być nieco niższy.
+
+Ponowna ocena w kamieniu 3 (zbiór walidacyjny, E5_s0):
+
+| Metryka | 15 epok | 30 epok |
+|---|---|---|
+| balanced accuracy | 0,815 | 0,798 |
+| macro-F1 | 0,746 | 0,711 |
+| recall czerniaka | 0,705 | **0,759** (+0,054) |
+| AUC czerniaka | 0,914 | 0,899 |
+
+Dłuższy trening przy tym ziarnie podniósł recall czerniaka o ok. 5 punktów procentowych kosztem ok. 2 punktów balanced accuracy — korzystny kompromis dla zastosowania przesiewowego, w którym przeoczony czerniak jest groźniejszy niż fałszywy alarm. Analiza Grad-CAM (H5) nie zmienia się: najsilniejszy punkt mapy leży na zmianie w 99% zdjęć.
